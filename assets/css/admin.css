@@ -63,3 +63,16 @@ select.input option { color: #0a1020; }
   .sidebar { position: static; max-height: none; }
   .side-menu { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
+
+/* Thumbnail di tabel dan form */
+.thumb { width: 96px; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 10px; }
+.field .thumb { width: 100%; }
+.table .thumb { display: block; }
+textarea.input { resize: vertical; }
+
+/* Grafik batang pengunjung */
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: .5rem; height: 170px; align-items: end; }
+.bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: .25rem; }
+.bar-col i { width: 100%; max-width: 38px; border-radius: 8px 8px 4px 4px; background: linear-gradient(to top, var(--accent-3), var(--accent-1)); box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+.bar-n { font-size: .8rem; color: var(--text-muted); }
+.bar-d { font-size: .78rem; color: var(--text-muted); }

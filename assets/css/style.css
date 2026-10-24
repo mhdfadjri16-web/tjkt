@@ -345,3 +345,9 @@ ul { margin: 0; padding: 0; }
 
 /* Hero satu kolom di layar sempit */
 @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+
+/* Logo situs dan banner (diatur dari Tema) */
+.brand-mark.has-logo { background: none; padding: 0; overflow: hidden; box-shadow: none; }
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+.hero-banner { overflow: hidden; border-radius: var(--radius-lg); margin-bottom: var(--section-y); padding: 0; }
+.hero-banner img { width: 100%; aspect-ratio: 21 / 8; object-fit: cover; }

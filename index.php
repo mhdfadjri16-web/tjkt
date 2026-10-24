@@ -48,6 +48,10 @@ $galeri   = galeri_list(null, 'foto', 5);
     </div>
   </section>
 
+  <?php if (site('banner_hero')): ?>
+  <div class="container"><div class="hero-banner glass"><img src="<?= h(upload_url(site('banner_hero'))) ?>" alt="Banner Jurusan <?= h(site('singkatan')) ?>"></div></div>
+  <?php endif; ?>
+
   <!-- Kompetensi -->
   <section class="section">
     <div class="container">

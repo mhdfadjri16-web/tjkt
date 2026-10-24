@@ -1,0 +1,7 @@
+# File PHP plugin tidak boleh dibuka langsung, kecuali api.php (endpoint publik)
+<FilesMatch "^(?!api\.php$).*\.php$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.json$">
+  Require all denied
+</FilesMatch>

@@ -17,6 +17,7 @@ $menu_konten = [
     'flyer'     => ['Flyer PKL', 'kelola-flyer.php'],
     'mitra'     => ['Mitra industri', 'kelola-mitra.php'],
     'profil'    => ['Profil jurusan', 'kelola-profil.php'],
+    'pengajar'  => ['Guru dan pengajar', 'kelola-pengajar.php'],
 ];
 $menu_super = [
     'akun'       => ['Kelola akun', 'kelola-akun.php'],

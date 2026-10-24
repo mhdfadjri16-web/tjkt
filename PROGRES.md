@@ -1,72 +1,67 @@
-# Catatan Progres - sampai Tahap B (AI ke-2)
+# Catatan Progres - Tahap A sampai D selesai ditulis
 
 ## Status
-Tahap A dan B selesai ditulis, tetapi PHP tidak tersedia di sandbox pembuat, jadi kode HANYA dicek statis
-(kurung/kurawal seimbang) dan BELUM dijalankan, terutama bagian database dan login. Uji di Railway/XAMPP
-memakai checklist di bawah, lalu laporkan error apa adanya ke AI berikutnya.
+Semua tahap PRD v2 sudah ditulis. PHP TIDAK tersedia di sandbox pembuat, jadi kode PHP hanya dicek statis (kurung dan
+kurawal seimbang) dan BELUM pernah dijalankan; JavaScript sudah dicek sintaksnya dengan Node. Langkah berikutnya adalah
+uji di Railway memakai checklist di bawah, lalu perbaiki error yang muncul.
 
-## Tahap B: yang dibuat atau diubah
-- `includes/db.php`: PDO dari env `MYSQLHOST/PORT/USER/PASSWORD/DATABASE`; helper `db()`, `q_all()`, `q_one()`, `q_exec()`
-  (semua prepared statement; q_all/q_one mengembalikan null bila DB mati atau tabel belum ada).
-- `includes/data.php`: DIGANTI jadi query MySQL. Bila DB tidak terhubung / tabel belum ada, otomatis jatuh ke
-  `includes/data-dummy.php` (isi lama Tahap A, fungsi berawalan `dummy_`). Nama fungsi dan bentuk array tidak berubah.
-- `install.php`: pasang schema + seed + superadmin pertama; butuh env `SETUP_TOKEN`; terkunci otomatis setelah ada admin.
-- `includes/auth.php`: session aman (HttpOnly, SameSite=Lax, Secure di HTTPS), login, logout, `require_login()`,
-  `require_role('superadmin')`, rate limit (5 gagal / 10 menit per username atau IP), `cek_password_baru()` (min 8 karakter),
-  `redirect()`, `flash_set()/flash_get()`.
-- `includes/csrf.php`: `csrf_field()` dan `csrf_check()` untuk semua form POST.
-- `includes/admin-header.php`, `admin-footer.php`, `assets/css/admin.css`: layout admin bergaya glass (sidebar + konten).
-- `admin/`: `login.php`, `logout.php` (POST), `index.php`, `dashboard.php` (ringkasan jumlah), `akun-saya.php` (ganti nama/password),
-  `kelola-akun.php` (superadmin: tambah, ubah role/aktif, reset password, hapus; tidak bisa menghapus/menurunkan diri sendiri
-  atau superadmin aktif terakhir).
-- `.htaccess` di `includes/`, `database/`, `docker/` menolak akses langsung; `Dockerfile` kini mengaktifkan AllowOverride All.
+## Ringkasan per tahap
+- **A**: Dockerfile, schema/seed, design system liquid glass (`assets/css/style.css`), halaman publik.
+- **B**: `includes/db.php`, data dari MySQL dengan cadangan dummy (`data.php` + `data-dummy.php`), `install.php`, login,
+  role superadmin/editor, CSRF, rate limit, kelola akun, akun saya.
+- **C**: `includes/upload.php` (upload ke Volume), `includes/crud.php` (mesin CRUD generik), halaman
+  `admin/kelola-kegiatan|galeri|flyer|mitra|pengajar|profil.php`.
+- **D**: `includes/plugin-loader.php` (plugin + hook), plugin `plugins/chat-agent/` (widget, API, mesin rule-based, placeholder AI),
+  `admin/plugins.php`, `admin/chat-faq.php`, `admin/tema.php`, `admin/pengaturan.php`, `includes/stats.php` (tracking anonim),
+  dashboard dengan grafik pengunjung.
+
+## Hak akses
+- Editor: dashboard, kegiatan, galeri, flyer, mitra, pengajar, profil, akun saya (boleh edit semua konten).
+- Superadmin: semua di atas + kelola akun, plugin (termasuk FAQ chat), tema, pengaturan situs.
 
 ## Deploy ke Railway
-1. Buat project, tambahkan service **MySQL** dan service **Web** dari repo/folder ini (Railway memakai `Dockerfile`).
-2. Di service Web, Variables: referensikan variabel MySQL (`MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`,
-   `MYSQLDATABASE`), tambahkan `SETUP_TOKEN` (teks acak panjang) dan `UPLOAD_DIR=/data/uploads`.
-3. Tambahkan **Volume** ke service Web, mount path `/data`.
-4. Buka `https://<domain-railway>/install.php`, isi token + akun superadmin, centang data contoh, pasang.
-5. Masuk lewat `/admin/login.php`.
+1. Buat project; tambahkan service **MySQL** dan service **Web** dari folder ini (memakai `Dockerfile`).
+2. Variables service Web: referensikan `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`; tambahkan
+   `SETUP_TOKEN` (acak, panjang), `UPLOAD_DIR=/data/uploads`, dan (disarankan) `APP_SECRET` (acak, untuk hash pengunjung).
+3. Tambahkan **Volume** ke service Web, mount path `/data`. Dockerfile otomatis membuat folder upload dan memberi izin tulis saat start.
+4. Buka `/install.php`, isi token + akun superadmin, centang data contoh. Setelah itu halaman terkunci.
+5. Masuk di `/admin/login.php`. Ganti semua isi contoh dari dashboard.
 
 ## Checklist uji (belum pernah dijalankan)
-- [ ] `install.php` berhasil dan setelahnya menampilkan "sudah terpasang"
-- [ ] Beranda dan halaman publik menampilkan data dari DB (ubah satu baris di DB, pastikan berubah di situs)
-- [ ] Login benar/salah, lalu 5x salah memunculkan pesan terkunci
-- [ ] Editor tidak bisa membuka `kelola-akun.php` (403)
-- [ ] Tambah akun editor, reset password, nonaktifkan, hapus
-- [ ] Keluar (tombol di sidebar) menghapus sesi
+Instalasi dan login
+- [ ] `install.php` sukses; kunjungan kedua menampilkan "sudah terpasang"
+- [ ] Login benar/salah; 5x salah memunculkan pesan terkunci; keluar menghapus sesi
+- [ ] Editor tidak bisa membuka kelola-akun, plugins, tema, pengaturan (403)
+Konten dan upload
+- [ ] Tambah/ubah/hapus kegiatan dengan gambar; slug unik; agenda mendatang muncul di kolom agenda
+- [ ] Galeri: foto (upload) dan video (link YouTube), filter, lightbox, modal video di situs publik
+- [ ] Flyer PKL, mitra, pengajar, profil (termasuk keunggulan dan logo)
+- [ ] Gambar tetap ada setelah redeploy (bukti Volume bekerja); hapus data ikut menghapus file
+- [ ] Upload gagal bila bukan JPG/PNG/WebP atau > 8 MB
+Plugin, tema, pengaturan
+- [ ] Chat muncul di semua halaman publik bila plugin aktif; hilang bila dinonaktifkan
+- [ ] Chat menjawab FAQ; pertanyaan tak dikenal menampilkan saran dan tombol WhatsApp
+- [ ] Ubah warna/logo/banner di Tema langsung terlihat di situs; ubah nama sekolah/kontak di Pengaturan
+- [ ] Dashboard menampilkan angka pengunjung setelah beberapa kali membuka situs (bukan saat login admin)
+
+## Catatan teknis penting
+- `includes/crud.php`: tambah halaman CRUD baru cukup dengan satu file berisi konfigurasi (lihat `admin/kelola-kegiatan.php`).
+  Tipe field: text, textarea, url, select, date, number, checkbox, image, media_url (khusus galeri).
+- Gambar disimpan sebagai NAMA FILE di DB; ditampilkan lewat `media()`/`upload_url()` dan `media.php`.
+- Plugin baru: buat `plugins/<slug>/plugin.json` + `bootstrap.php` (memakai `register_hook('footer_end'|'head_end', fn)`).
+  Muncul otomatis di Admin > Plugin; pengaturan yang dideklarasikan di plugin.json punya formulir otomatis.
+- Mesin chat bisa diganti: `plugins/chat-agent/engines/ai.php` masih placeholder. Panggil API AI dari server, simpan kunci di env,
+  batasi laju per IP, dan jangan pernah menaruh kunci di JavaScript.
+- Tracking pengunjung menyimpan hash IP (dengan tanggal dan garam), bukan IP asli. Tabel `visitor_log` belum dibersihkan otomatis.
+- `.htaccess` di includes/, database/, docker/, plugins/ menolak akses langsung (plugins: hanya `api.php` yang boleh).
+- Sesi PHP disimpan di disk container; setelah redeploy admin perlu login ulang.
 
 ## Penyimpangan dari PRD
 - `flyer_pkl` punya kolom tambahan `bidang` dan `kuota`.
-- File tambahan: `includes/helpers.php`, `components.php`, `data-dummy.php`, `csrf.php`, `admin-header/footer.php`, `akun-saya.php`.
+- Ada halaman tambahan `kelola-pengajar.php` dan `chat-faq.php`; `plugin.json` memakai kunci `pengaturan` untuk formulir otomatis.
 - Reset password hanya oleh superadmin (tanpa email), sesuai PRD v2.
 
-## Belum dikerjakan
-- Tahap C: CRUD kegiatan, galeri, flyer, mitra, profil, pengajar; upload ke Volume (`includes/upload.php`).
-- Tahap D: plugin loader + plugin chat-agent, tema, pengaturan situs, tracking pengunjung, kelola FAQ.
-- Logo (menyusul), konten asli (semua masih contoh).
-
-## Instruksi untuk AI ke-3 (Tahap C + D)
-- **Template halaman admin**: `require_once includes/auth.php; $admin = require_login();` (atau `require_role('superadmin')`),
-  set `$admin_title` dan `$admin_active`, lalu `require includes/admin-header.php` ... `admin-footer.php`.
-- **Nama file yang sudah dicantumkan di menu** (otomatis muncul begitu file dibuat di `admin/`):
-  `kelola-kegiatan.php`, `kelola-galeri.php`, `kelola-flyer.php`, `kelola-mitra.php`, `kelola-profil.php`,
-  `plugins.php`, `tema.php`, `pengaturan.php`. Kunci `$admin_active`: kegiatan, galeri, flyer, mitra, profil, plugins, tema, pengaturan.
-- Semua form POST: `<?= csrf_field() ?>` + `csrf_check()` di awal handler; pesan lewat `flash_set('ok'|'err', ...)` + `redirect()`.
-- Query: pakai `q_all/q_one/q_exec`; untuk INSERT yang butuh ID baru pakai `db()->lastInsertId()`.
-- Gaya form/tabel/alert sudah ada di `admin.css` (`.form .field .input .row .table .alert .badge .btn-danger`).
-- Upload: simpan ke `getenv('UPLOAD_DIR') ?: '/data/uploads'` dengan nama acak; di DB simpan NAMA FILE saja
-  (fungsi `media()` dan `upload_url()` sudah mengurus tampilannya via `media.php`). Validasi MIME + `getimagesize`, batasi ukuran.
-- Slug kegiatan harus unik (kolom `slug` UNIQUE); buat helper slugify.
-- `kegiatan.created_by` isi dengan `$admin['id']`; editor boleh mengedit semua konten.
-- Plugin: `hook('head_end')` dan `hook('footer_end')` sudah dipanggil di `header.php`/`footer.php`; isi fungsi `hook()` di
-  `helpers.php` lewat `includes/plugin-loader.php`. `plugin_aktif($nama)` sudah membaca tabel `plugins`.
-  Tabel `chat_faq` sudah terisi 4 FAQ contoh. Mesin chat dibuat bisa diganti (rule-based dulu).
-- Tema: `header.php` sudah membaca `site('warna_bg'|'warna_aksen_1..3')`; tinggal dibuat form yang menulis ke `pengaturan_situs`
-  (pakai `INSERT ... ON DUPLICATE KEY UPDATE`).
-- Tracking pengunjung: tabel `visitor_log`; catat di `header.php` publik (hash IP + garam), jangan simpan IP mentah.
-
-## Jalankan lokal
-XAMPP/PHP 8+: buat database `tjkt` kosong, atur env `SETUP_TOKEN`, jalankan `php -S localhost:8000`, buka `/install.php`.
-Tanpa database, halaman publik tetap tampil memakai data dummy.
+## Belum ada / ide lanjutan
+- Logo asli sekolah dan konten asli (semua masih contoh) - isi lewat dashboard.
+- Mesin chat berbasis AI, pembersihan log pengunjung lama, paginasi di daftar admin (batas saat ini 300 baris), kompres/resize gambar.
+- Reset password lewat email (butuh SMTP).

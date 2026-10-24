@@ -55,8 +55,10 @@ function wa_link(string $pesan = ''): string {
     return 'https://wa.me/' . $no . ($pesan !== '' ? '?text=' . rawurlencode($pesan) : '');
 }
 
-/** Hook plugin. Tahap A: belum melakukan apa pun. Tahap D mengisinya via plugin-loader.php. */
-function hook(string $name): void { }
+/** Titik kait plugin (head_end, footer_end). Pelaksananya ada di includes/plugin-loader.php. */
+function hook(string $name): void {
+    if (function_exists('plugin_run_hooks')) plugin_run_hooks($name);
+}
 
 function not_found(): void {
     http_response_code(404);

@@ -1,0 +1,13 @@
+{
+  "nama": "chat-agent",
+  "judul": "Chat Agent",
+  "versi": "1.0.0",
+  "deskripsi": "Widget chat otomatis di pojok kanan bawah untuk menjawab pertanyaan pengunjung dari daftar FAQ, lengkap dengan tombol hubungi admin lewat WhatsApp.",
+  "admin_page": "chat-faq.php",
+  "admin_label": "Kelola FAQ",
+  "pengaturan": {
+    "engine": {"label": "Mesin jawaban", "type": "select", "options": {"rule-based": "FAQ (rule-based)", "ai": "AI (belum tersedia)"}, "default": "rule-based"},
+    "sapaan": {"label": "Sapaan pembuka", "type": "text", "default": "Halo! Ada yang bisa dibantu soal Jurusan TJKT?"},
+    "wa_pesan": {"label": "Pesan awal WhatsApp", "type": "text", "default": "Halo, saya ingin bertanya tentang jurusan TJKT."}
+  }
+}

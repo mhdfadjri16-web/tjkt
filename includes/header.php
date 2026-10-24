@@ -4,6 +4,7 @@
  *   $page_title (string), $active (beranda|profil|kegiatan|galeri|pkl|kontak), $page_desc (opsional)
  */
 require_once __DIR__ . '/init.php';
+track_visit();
 $page_title = $page_title ?? site('singkatan') . ' ' . site('nama_sekolah');
 $page_desc  = $page_desc ?? site('tagline');
 $active     = $active ?? '';
@@ -41,7 +42,8 @@ $nav = [
 <header class="nav-wrap">
   <nav class="nav glass" aria-label="Navigasi utama">
     <a class="brand" href="<?= h(url()) ?>">
-      <span class="brand-mark" aria-hidden="true"><?= h(site('singkatan')) ?></span>
+      <?php if (site('logo_situs')): ?><span class="brand-mark has-logo" aria-hidden="true"><img src="<?= h(upload_url(site('logo_situs'))) ?>" alt=""></span>
+      <?php else: ?><span class="brand-mark" aria-hidden="true"><?= h(site('singkatan')) ?></span><?php endif; ?>
       <span class="brand-text"><strong><?= h(site('nama_sekolah')) ?></strong><small>Jurusan <?= h(site('singkatan')) ?></small></span>
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Buka menu">
