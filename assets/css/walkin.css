@@ -1,0 +1,38 @@
+/* Walk-in lab - memakai token dari style.css (liquid glass) */
+.walkin-stage {
+  position: relative; overflow: hidden; isolation: isolate;
+  height: clamp(420px, 74vh, 780px); border-radius: var(--radius-lg); background: #0b0f17;
+}
+.walkin-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #0b0f17; }
+.walkin-stage:fullscreen, .walkin-stage:-webkit-full-screen { height: 100vh; border-radius: 0; }
+
+/* Layar awal: gambar pratinjau + tombol mulai */
+.walkin-start { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 1rem; }
+.walkin-start[hidden] { display: none; }
+.walkin-start-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(3px) brightness(.55); transform: scale(1.04); }
+.walkin-start-card { position: relative; max-width: 30rem; text-align: center; padding: clamp(1.3rem, 4vw, 2.2rem); border-radius: var(--radius-lg); }
+.walkin-start-card h2 { margin-bottom: .4em; }
+.walkin-start-card p { color: var(--text-muted); margin-bottom: 1.2rem; }
+
+.walkin-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; margin-top: 1rem; }
+.walkin-bar p { margin: 0; font-size: .95rem; }
+.walkin-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.walkin-actions .btn svg { width: 18px; height: 18px; }
+
+.howto { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .7rem; }
+.howto li { display: flex; align-items: baseline; gap: .8rem; }
+.howto .chip { flex: none; min-width: 5.2rem; text-align: center; }
+.howto li span:last-child { color: var(--text-muted); }
+
+.walkin-note { margin-top: 1rem; font-size: .92rem; }
+
+/* Teaser di beranda */
+.walkin-teaser { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(1.2rem, 3vw, 2.4rem); align-items: center; padding: clamp(1.3rem, 3.5vw, 2.4rem); border-radius: var(--radius-lg); }
+.walkin-teaser h2 { margin-bottom: .4em; }
+.walkin-teaser p { color: var(--text-muted); }
+.walkin-teaser-img { display: block; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--glass-border); }
+.walkin-teaser-img img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+@media (max-width: 860px) { .walkin-teaser { grid-template-columns: 1fr; } }
+
+/* HP potret: kotak dibuat lebih tinggi supaya ajakan memutar layar terlihat penuh */
+@media (max-width: 640px) and (orientation: portrait) { .walkin-stage { height: clamp(380px, 68vh, 560px); } }

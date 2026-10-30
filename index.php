@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/init.php';
 $page_title = 'Beranda';
 $active = 'beranda';
-$extra_css = [asset('css/lab.css')];
+$extra_css = [asset('css/walkin.css')];
 require __DIR__ . '/includes/header.php';
 $kegiatan = kegiatan_list(3);
 $agenda   = agenda_list(3);
@@ -103,20 +103,18 @@ $galeri   = galeri_list(null, 'foto', 5);
     </div>
   </section>
 
-  <!-- Tur lab -->
+  <!-- Walk-in lab -->
   <section class="section">
     <div class="container">
-      <div class="lab-teaser glass">
+      <div class="walkin-teaser glass">
         <div>
           <h2>Jalan-jalan di lab TJKT</h2>
-          <p>Belum sempat berkunjung? Masuk ke laboratorium lewat tur virtual: lihat deretan komputer, layar, dan ruangan di baliknya.</p>
-          <a class="btn btn-primary" href="<?= h(url('pages/lab.php')) ?>">Mulai tur virtual</a>
+          <p>Belum sempat berkunjung? Masuk ke laboratorium lewat simulator walk-in 3D: lihat deretan komputer dan ruangan di baliknya, langsung dari browser.</p>
+          <a class="btn btn-primary" href="<?= h(url('pages/walk-in.php')) ?>">Mulai walk-in</a>
         </div>
-        <div class="lab-photos" aria-hidden="true">
-          <img src="<?= h(asset('img/lab/lab-02-t.jpg')) ?>" alt="" loading="lazy">
-          <img src="<?= h(asset('img/lab/lab-11-t.jpg')) ?>" alt="" loading="lazy">
-          <img src="<?= h(asset('img/lab/lab-17-t.jpg')) ?>" alt="" loading="lazy">
-        </div>
+        <a class="walkin-teaser-img" href="<?= h(url('pages/walk-in.php')) ?>" aria-label="Buka walk-in lab">
+          <img src="<?= h(asset('img/walkin-preview.jpg')) ?>" alt="Pratinjau simulator walk-in lab TJKT" loading="lazy" width="960" height="540">
+        </a>
       </div>
     </div>
   </section>

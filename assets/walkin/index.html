@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><title>Simulator walk-in lab TJKT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+:root{--bg:#dfe6ee;--ink:#1d2433;--card:rgba(255,255,255,.9);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--ink:#e8ecf3;--card:rgba(20,26,38,.88);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151d;--ink:#e8ecf3;--card:rgba(20,26,38,.88);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+body{position:relative}
+#c{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.hud{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));background:var(--card);color:var(--ink);padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;pointer-events:none;max-width:calc(100% - 24px)}
+#help{top:12px}#loc{bottom:12px;font-weight:500}
+#back{position:absolute;right:calc(12px + env(safe-area-inset-right,0px));top:12px;z-index:6;display:none;padding:8px 14px;border-radius:10px;background:var(--card);color:var(--ink);font-size:13px;text-decoration:none;font-weight:500}
+#nogl{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#rot{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--bg);color:var(--ink);text-align:center;padding:24px;font-size:16px;line-height:1.5}
+#rot button{font:inherit;padding:12px 20px;border-radius:12px;border:1px solid var(--ink);background:var(--card);color:var(--ink)}
+#rot small{opacity:.7;font-size:13px}
+@media (orientation:portrait) and (pointer:coarse){#rot{display:flex}}
+#stick{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.12);display:none;pointer-events:none;z-index:5}
+#knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;background:rgba(255,255,255,.6)}
+#run{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);color:#fff;font:13px system-ui,sans-serif;display:none;z-index:5;touch-action:none}
+@media (pointer:coarse){#run{display:block}}
+</style></head><body>
+<canvas id="c"></canvas>
+<a id="back" href="../../pages/walk-in.php">&larr; Kembali ke situs</a>
+<div id="nogl">Perangkat atau browser ini belum mendukung grafik 3D (WebGL), jadi simulator tidak bisa dijalankan. Coba buka lewat Chrome atau Edge versi terbaru, atau pakai perangkat lain.</div>
+<div class="hud" id="help">Jalan: W A S D atau tombol panah. Lihat sekeliling: geser mouse atau jari. Lari: tahan Shift. Di layar sentuh, geser di sisi kiri untuk jalan.</div>
+<div class="hud" id="loc">Lab utama</div>
+<div id="rot"><div>Putar HP ke mode landscape (mendatar) supaya simulator nyaman dipakai.</div><button id="fs">Layar penuh dan kunci landscape</button><small>Di iPhone: matikan kunci rotasi layar, lalu putar HP.</small></div>
+<div id="stick"><div id="knob"></div></div><button id="run">Lari</button>
+<script src="three.min.js"></script>
+<script>
+if(window.top===window)document.getElementById('back').style.display='block';
+(function(){var ok=false;try{var t=document.createElement('canvas');ok=!!(window.WebGLRenderingContext&&(t.getContext('webgl')||t.getContext('experimental-webgl')))}catch(e){}if(!ok){document.getElementById('nogl').style.display='flex';throw new Error('WebGL tidak tersedia')}})();
+const W=9.6,D=10.8,H=3.6,RAD=0.24,SX=6.2,SZ=-3.6,DX0=7.4,DX1=8.4;
+const sc=new THREE.Scene();sc.background=new THREE.Color(0x15181d);
+const cam=new THREE.PerspectiveCamera(72,1,0.05,60);cam.rotation.order='YXZ';
+const cv=document.getElementById('c');
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));
+ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=0.8;
+sc.add(new THREE.HemisphereLight(0xdfe8f5,0x6b6f78,0.3));
+const dl=new THREE.DirectionalLight(0xfff2e0,0.32);dl.position.set(W/2+2,H+4,D/2-2);dl.target.position.set(W/2,0,D/2);sc.add(dl,dl.target);
+dl.castShadow=true;dl.shadow.mapSize.set(2048,2048);const sh=dl.shadow.camera;sh.left=-9;sh.right=9;sh.top=9;sh.bottom=-9;sh.near=1;sh.far=24;dl.shadow.bias=-0.0006;
+[[0,0xcfe0f5],[W,0xcfe0f5]].forEach(p=>{const l=new THREE.DirectionalLight(p[1],0.16);l.position.set(p[0]?W+6:-6,3,D/2);l.target.position.set(W/2,1,D/2);sc.add(l,l.target)});
+const PL=(x,y,z,c,i,d)=>{const l=new THREE.PointLight(c,i,d,1.6);l.position.set(x,y,z);sc.add(l)};
+[1.6,4.8,8].forEach(x=>[1.8,4.6,7.4,9.8].forEach(z=>PL(x,H-0.3,z,0xfff6ea,0.5,8)));
+PL(7.6,2.8,-1.8,0xfff0d8,0.5,6);PL(3.4,2.8,-1.8,0xfff0d8,0.5,6);
+const mats={},geos={};
+const M=(c,r,m)=>{if(typeof c==='object')return c;const k=c+'_'+(r??.75)+'_'+(m||0);return mats[k]||(mats[k]=new THREE.MeshStandardMaterial({color:c,roughness:r??.75,metalness:m||0}))};
+const B=c=>new THREE.MeshBasicMaterial({color:c});
+function bx(w,h,d,m,x,y,z,p,r){const k=w+','+h+','+d;const g=geos[k]||(geos[k]=new THREE.BoxGeometry(w,h,d));const o=new THREE.Mesh(g,M(m,r));o.position.set(x,y,z);o.castShadow=h<2.2;o.receiveShadow=true;(p||sc).add(o);return o}
+function cyl(r,h,m,x,y,z,p,n){const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,n||16),M(m));o.position.set(x,y,z);o.castShadow=true;(p||sc).add(o);return o}
+function grp(x,y,z,ry){const g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=ry||0;sc.add(g);return g}
+function ctex(w,h,fn,rx,ry){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx||1,ry||1);t.anisotropy=8;return t}
+const tmat=(t,r)=>new THREE.MeshStandardMaterial({map:t,roughness:r??.85});
+const obs=[];const ob=(a,b,c,d)=>obs.push([a,b,c,d]);
+function obRot(x,z,rot,l0,l1,hz){if(rot===0)ob(x+l0,x+l1,z-hz,z+hz);else if(rot===Math.PI)ob(x-l1,x-l0,z-hz,z+hz);else ob(x-hz,x+hz,z-l1,z-l0)}
+
+function floor(x0,z0,x1,z1){const w=x1-x0,d=z1-z0;const t=ctex(128,128,(g,a,b)=>{g.fillStyle='#cfcfc9';g.fillRect(0,0,a,b);for(let i=0;i<400;i++){g.fillStyle='rgba(90,90,80,'+Math.random()*0.07+')';g.fillRect(Math.random()*a,Math.random()*b,3,3)}g.strokeStyle='#8f8f88';g.lineWidth=4;g.strokeRect(0,0,a,b)},w/0.4,d/0.4);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),tmat(t,0.3));m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,0,(z0+z1)/2);m.receiveShadow=true;sc.add(m)}
+function ceil(x0,z0,x1,z1){const w=x1-x0,d=z1-z0;const t=ctex(64,64,(g,a,b)=>{g.fillStyle='#d9d9d4';g.fillRect(0,0,a,b);g.fillStyle='#a9a9a3';g.fillRect(0,0,2,b)},w/0.12,1);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),tmat(t,0.9));m.rotation.x=Math.PI/2;m.position.set((x0+x1)/2,H,(z0+z1)/2);sc.add(m)}
+const wallTex=ctex(256,256,(g,a,b)=>{g.fillStyle='#d6d3ca';g.fillRect(0,0,a,b);const gr=g.createLinearGradient(0,b*0.78,0,b);gr.addColorStop(0,'rgba(90,85,70,0)');gr.addColorStop(1,'rgba(90,85,70,.4)');g.fillStyle=gr;g.fillRect(0,b*0.78,a,b*0.22);for(let i=0;i<8;i++){g.fillStyle='rgba(110,100,80,.08)';g.fillRect(Math.random()*a,0,3+Math.random()*7,b)}g.fillStyle='#2f6fb8';g.fillRect(0,0,a,5)});
+const wallM=tmat(wallTex,0.95);
+function wall(x0,z0,x1,z1,h,y){h=h||H;y=y||0;const L=Math.hypot(x1-x0,z1-z0),ax=Math.abs(x1-x0)>Math.abs(z1-z0);bx(ax?L:0.18,h,ax?0.18:L,wallM,(x0+x1)/2,y+h/2,(z0+z1)/2).castShadow=false}
+function lintel(x,z,w,d){bx(w,H-2.2,d,wallM,x,2.2+(H-2.2)/2,z).castShadow=false}
+
+floor(0,0,W,D);floor(1.2,SZ,W,0);ceil(0,0,W,D);ceil(1.2,SZ,W,0);
+wall(0,0,0,D);wall(W,0,W,1.0);wall(W,2.8,W,D);wall(0,D,W,D);
+wall(0,0,DX0,0);wall(DX1,0,W,0);wall(1.2,0,1.2,SZ);wall(1.2,SZ,W,SZ);wall(W,SZ,W,0);
+wall(SX,SZ,SX,-2.5);wall(SX,-1.4,SX,0);
+lintel((DX0+DX1)/2,0,1,0.18);lintel(W,1.9,0.18,1.8);lintel(SX,-1.95,0.18,1.1);
+
+const curtTex=(w,star)=>ctex(64,64,(g,a,b)=>{g.fillStyle=star?'#1a2f9c':'#1c4fd0';g.fillRect(0,0,a,b);for(let i=0;i<16;i++){g.fillStyle=i%2?'rgba(255,255,255,.12)':'rgba(0,0,50,.28)';g.fillRect(i*4,0,3,b)}if(star){g.fillStyle='#fff';for(let i=0;i<14;i++){g.beginPath();g.arc((i*37)%64,(i*23)%64,1.6,0,7);g.fill()}g.beginPath();g.arc(32,30,9,0,7);g.fill();g.fillStyle='#1a2f9c';g.beginPath();g.arc(36,28,8,0,7);g.fill()}},w*1.8,1);
+const louver=ctex(64,64,(g,a,b)=>{g.fillStyle='#1d120c';g.fillRect(0,0,a,b);g.fillStyle='#4a2f20';for(let i=0;i<8;i++)g.fillRect(0,i*8,a,3)});
+function win(x,z,rot,w,curt,star){const g=grp(x,0,z,rot);
+bx(w,2.15,0.03,B(0x7f9ab4),0,2.0,0.1,g);
+bx(w+0.1,0.06,0.1,0x3a2216,0,3.14,0.11,g);bx(w+0.1,0.06,0.1,0x3a2216,0,2.5,0.11,g);bx(0.05,2.2,0.1,0x3a2216,-w/2-0.03,2.0,0.11,g);bx(0.05,2.2,0.1,0x3a2216,w/2+0.03,2.0,0.11,g);
+bx(w,0.58,0.04,tmat(louver),0,2.84,0.13,g);
+if(curt){bx(w*0.97,1.5,0.1,tmat(curtTex(w,star),0.9),0,1.7,0.22,g);bx(w+0.3,0.04,0.04,0x9a7f45,0,2.46,0.26,g,0.4);for(let i=0;i<w*5;i++)cyl(0.018,0.02,0xb08f3a,-w*0.47+i*0.2,2.42,0.28,g,8).rotation.x=Math.PI/2}}
+function ac(x,y,z,rot){const g=grp(x,y,z,rot);bx(1.0,0.3,0.22,0xdcdcd8,0,0,0.11,g,0.35);bx(0.92,0.05,0.06,0xb8b8b4,0,-0.1,0.22,g);bx(0.04,0.02,0.01,B(0x33cc66),0.4,0.05,0.23,g)}
+[4.6,8.2].forEach(z=>{win(0,z,Math.PI/2,2.3,true);win(W,z,-Math.PI/2,2.3,true)});
+win(3.0,SZ,0,1.8,true,true);win(7.6,SZ,0,1.4,true,true);
+bx(1.0,0.55,0.05,tmat(louver),7.9,2.9,0.1);bx(0.55,0.5,0.05,tmat(louver),9.1,2.9,0.1);
+ac(2.7,2.8,D,Math.PI);ac(7.0,2.8,D,Math.PI);
+for(let x=1.6;x<W;x+=3.2)for(let z=1.8;z<D;z+=2.8){const g=grp(x,H-0.01,z,0);const r=new THREE.Mesh(new THREE.RingGeometry(0.1,0.14,20),B(0x9a9a96));r.rotation.x=Math.PI/2;g.add(r);const m=new THREE.Mesh(new THREE.CircleGeometry(0.1,20),B(0xfff7e6));m.rotation.x=Math.PI/2;g.add(m)}
+{const g=grp(4.8,H,5.0,0);bx(0.04,0.3,0.04,0x777777,0,-0.15,0,g);bx(0.4,0.13,0.32,0xd8d8d4,0,-0.36,0,g);cyl(0.055,0.06,0x222222,0,-0.36,0.18,g).rotation.x=Math.PI/2}
+
+const batik=ctex(128,128,(g,a,b)=>{g.fillStyle='#34296a';g.fillRect(0,0,a,b);for(let i=0;i<40;i++){g.fillStyle=['#7e58b8','#b44a8a','#d8702c','#4a99d6'][i%4];g.beginPath();g.ellipse(Math.random()*a,Math.random()*b,3+Math.random()*7,2+Math.random()*4,Math.random()*3,0,7);g.fill()}},2,1.5);
+const org=ctex(220,190,(g,a,b)=>{g.fillStyle='#f4f4f4';g.fillRect(0,0,a,b);g.fillStyle='#2c8a9a';g.fillRect(0,0,a,16);g.fillStyle='#f2a53a';g.fillRect(0,0,40,10);g.fillRect(a-40,0,40,10);[[80,26],[80,50],[80,74],[8,110],[8,134],[8,158],[116,110],[116,134],[116,158]].forEach(p=>{g.fillStyle='#f2a53a';g.fillRect(p[0],p[1],96,17);g.fillStyle='#c0392b';g.beginPath();g.arc(p[0]+2,p[1]+9,9,0,7);g.fill()})});
+const cal=ctex(128,160,(g,a,b)=>{g.fillStyle='#fff';g.fillRect(0,0,a,b);const c=['#f4c542','#e8685a','#5aa9e6','#7bc47f','#b58ae0'];for(let y=0;y<8;y++)for(let x=0;x<7;x++){g.fillStyle=c[(x*3+y*5)%5];g.fillRect(6+x*17,8+y*19,15,16)}});
+const cush=ctex(64,64,(g,a,b)=>{g.fillStyle='#b8923f';g.fillRect(0,0,a,b);g.fillStyle='#3f6e2e';for(let i=0;i<6;i++){g.beginPath();g.arc(8+(i%3)*24,12+Math.floor(i/3)*30,9,0,7);g.fill()}},2,1);
+const kbT=ctex(64,32,(g,a,b)=>{g.fillStyle='#151517';g.fillRect(0,0,a,b);g.fillStyle='#34363b';for(let y=0;y<5;y++)for(let x=0;x<17;x++)g.fillRect(2+x*3.6,3+y*5.4,2.8,4)});
+const winT=ctex(64,40,(g,a,b)=>{const gr=g.createLinearGradient(0,0,a,b);gr.addColorStop(0,'#1d7ad6');gr.addColorStop(1,'#0b3c8a');g.fillStyle=gr;g.fillRect(0,0,a,b);g.fillStyle='#fff';g.fillRect(24,10,7,7);g.fillRect(33,10,7,7);g.fillRect(24,19,7,7);g.fillRect(33,19,7,7);g.fillStyle='#0a2a5c';g.fillRect(0,b-3,a,3)});
+bx(1.55,1.35,0.03,tmat(org),5.0,2.15,0.1);
+{const g=grp(5.0,3.0,0.1,0);[[0.24,0xb04a8c],[0.19,0x3a6fc0],[0.14,0xe8e8e8]].forEach((p,i)=>{const m=new THREE.Mesh(new THREE.CircleGeometry(p[0],24),B(p[1]));m.position.z=0.01*(i+1);g.add(m)});bx(0.012,0.1,0.004,0x222222,0,0.05,0.05,g);bx(0.01,0.07,0.004,0x222222,0.03,0,0.05,g).rotation.z=-1.2}
+[[6.45,0.17,0.22],[6.74,0.15,0.26],[6.99,0.17,0.22]].forEach(p=>{bx(p[1],p[2],0.02,0x1a1a1a,p[0],2.9,0.1);bx(p[1]-0.03,p[2]-0.04,0.01,B(0x6a625c),p[0],2.9,0.115)});
+bx(0.14,0.1,0.16,0xd8d8d4,9.1,3.3,0.2);
+bx(0.9,1.1,0.03,tmat(cal),8.95,1.6,0.1).castShadow=false;
+{const l=grp(0.1,0,2.6,Math.PI/2);const r=new THREE.Mesh(new THREE.CircleGeometry(0.28,24),B(0x3a5aa0));r.position.set(0,2.8,0.02);l.add(r);const r2=new THREE.Mesh(new THREE.CircleGeometry(0.16,24),B(0xc8902e));r2.position.set(0,2.8,0.03);l.add(r2);
+const b=grp(0,0,D-0.1,Math.PI);[[3.3,2.2,0xc8681f,.2],[6.5,2.3,0x5a4cb0,.28],[6.1,2.1,0xb03a1a,.2]].forEach(p=>bx(p[3],p[3]*1.2,0.02,B(p[2]),W-p[0],p[1],0.06,b));
+[3.4,3.8,4.2].forEach(x=>bx(0.12,0.2,0.04,0x6a4220,x,2.0,D-0.1))}
+
+const ifp=grp(6.55,0,0.65,0);bx(1.7,1.0,0.07,0x1b1d21,0,1.5,0,ifp,0.4);bx(1.6,0.9,0.01,M(0x040508,0.08,0.3),0,1.5,0.04,ifp);bx(0.1,1.1,0.06,0x666b72,0,0.55,-0.06,ifp,0.5);bx(1.3,0.05,0.5,0x666b72,0,0.03,0,ifp,0.5);bx(1.4,0.04,0.3,0x666b72,0,0.72,0.12,ifp,0.5);bx(0.14,0.05,0.07,0x1a1a1a,0,2.03,0,ifp);
+ob(5.7,7.35,0.3,1.0);bx(0.5,1.6,0.03,0x2a7fc0,7.7,0.9,0.8);
+{const d=grp(DX1,0,-0.5,0);bx(0.05,2.1,0.95,0xd8dadc,0,1.05,0,d)}
+{const e=grp(W,0,1.9,-Math.PI/2);[-0.45,0.45].forEach(o=>{bx(0.88,2.1,0.05,0xdcdee0,o,1.05,0.05,e);bx(0.68,1.8,0.01,0xc8ccd0,o,1.05,0.08,e)});bx(0.04,0.14,0.06,0xaab0b6,-0.06,1.0,0.1,e,0.3);bx(0.04,0.14,0.06,0xaab0b6,0.06,1.0,0.1,e,0.3);bx(1.9,0.05,0.1,0xdcdee0,0,2.12,0.05,e)}
+{const g=grp(W-0.4,0,3.3,0);bx(0.4,0.95,0.38,0xdde0e3,0,0.48,0,g,0.4);cyl(0.15,0.48,M(0x2f86d6,0.3),0,1.2,0,g);cyl(0.065,0.08,0x2f86d6,0,1.52,0,g);ob(W-0.65,W-0.15,3.05,3.55)}
+
+function desk(x,z,rot,k){const g=grp(x,0,z,rot);
+bx(0.55,0.035,0.65,0xd69a2c,0,0.73,0,g,0.45);bx(0.5,0.12,0.6,0xc68422,0,0.63,0,g);bx(0.46,0.03,0.58,0xb87a1c,0,0.34,0,g);
+[[-0.24,-0.3],[0.24,-0.3],[-0.24,0.3],[0.24,0.3]].forEach(a=>bx(0.04,0.72,0.04,0xc87d24,a[0],0.36,a[1],g,0.4));bx(0.03,0.03,0.58,0xc87d24,0.24,0.16,0,g);bx(0.03,0.03,0.58,0xc87d24,-0.24,0.16,0,g);
+bx(0.22,0.025,0.26,0x121216,-0.12,0.76,0,g,0.4);bx(0.045,0.13,0.08,0x121216,-0.12,0.83,0,g);
+bx(0.045,0.34,0.56,0x101013,-0.12,1.05,0,g,0.35);const on=k%6===3;
+bx(0.005,0.29,0.5,on?tmat(winT,0.2):M(0x07080b,0.1,0.2),-0.095,1.05,0,g);
+bx(0.15,0.016,0.42,tmat(kbT,0.5),0.1,0.76,0,g);bx(0.06,0.025,0.04,0x111111,0.1,0.76,0.27,g,0.3);
+const j=((k*37)%10-5)*0.012;
+bx(0.4,0.035,0.4,0xd9a040,0.5+j,0.46,0,g);[-1,1].forEach(a=>bx(0.035,1.0,0.035,0xc87d24,0.69+j,0.5,a*0.185,g));bx(0.03,0.22,0.4,0xd9a040,0.69+j,0.86,0,g);bx(0.03,0.05,0.4,0xd9a040,0.69+j,0.64,0,g);
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(a=>bx(0.03,0.46,0.03,0xc87d24,0.5+j+a[0]*0.17,0.23,a[1]*0.17,g));
+obRot(x,z,rot,-0.3,0.72,0.34)}
+for(let i=0;i<9;i++){const z=3.5+i*0.82;desk(0.4,z,0,i);desk(2.5,z,Math.PI,i+9);desk(W-0.4,z,Math.PI,i+18);desk(W-2.5,z,0,i+27)}
+desk(3.9,D-0.4,Math.PI/2,3);desk(5.3,D-0.4,Math.PI/2,10);
+
+function tchair(x,z,ry,c){const g=grp(x,0,z,ry);bx(0.44,0.05,0.44,c,0,0.46,0,g,0.5);bx(0.44,0.42,0.05,c,0,0.74,0.21,g,0.5);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(a=>bx(0.03,0.45,0.03,0x222222,a[0]*0.19,0.22,a[1]*0.19,g));ob(x-0.26,x+0.26,z-0.26,z+0.26)}
+function pdesk(x,z,w,d,c){const g=grp(x,0,z,0);bx(w,0.05,d,c,0,0.72,0,g);bx(w,0.01,d,M(tmat(batik,0.35)),0,0.755,0,g);bx(0.05,0.7,d-0.05,c,-w/2+0.04,0.35,0,g);bx(0.05,0.7,d-0.05,c,w/2-0.04,0.35,0,g);bx(w-0.1,0.4,0.03,c,0,0.5,d/2-0.06,g);bx(w-0.14,0.03,d-0.15,0x6a3a2c,0,0.3,0,g);ob(x-w/2,x+w/2,z-d/2,z+d/2);return g}
+{const g=pdesk(5.0,1.5,1.4,0.7,0x5a2a24);bx(0.3,0.01,0.22,0xf5f5f5,-0.2,0.77,0.05,g);bx(0.15,0.02,0.04,0xe8e8e8,0.1,0.775,0.15,g);cyl(0.05,0.1,0x2e9a5a,-0.5,0.82,-0.1,g)}
+{const g=pdesk(3.1,1.3,1.4,0.7,0x5a2a24);bx(0.4,0.22,0.34,0x1a1a1a,0.35,0.87,0.05,g);bx(0.22,0.45,0.4,0x151515,-0.4,0.97,-0.05,g,0.4);bx(0.3,0.14,0.2,0x111111,-0.15,0.82,-0.1,g);[-0.1,0,0.1].forEach(a=>bx(0.012,0.22,0.012,0xf0f0f0,-0.4+a,1.32,-0.05,g))}
+tchair(5.0,0.95,Math.PI,0x3a2e26);tchair(3.1,0.7,Math.PI,0x2a2523);
+desk(1.5,2.2,0,5);
+
+const dark=0x241914;
+{bx(2.4,0.38,0.72,dark,8.3,0.19,SZ+0.4);bx(2.4,0.18,0.62,tmat(cush),8.3,0.47,SZ+0.45);bx(2.4,0.5,0.1,dark,8.3,0.7,SZ+0.06);
+bx(0.72,0.38,1.0,dark,W-0.4,0.19,-2.35);bx(0.62,0.18,1.0,tmat(cush),W-0.45,0.47,-2.35);bx(0.1,0.5,1.0,dark,W-0.08,0.7,-2.35);
+ob(7.1,W,SZ,-2.85);ob(W-0.8,W,-2.85,-1.85);
+bx(0.95,0.04,0.55,dark,7.8,0.45,-2.0);[[-0.42,-0.22],[0.42,-0.22],[-0.42,0.22],[0.42,0.22]].forEach(a=>bx(0.04,0.45,0.04,dark,7.8+a[0],0.22,-2.0+a[1]));bx(0.4,0.02,0.28,0x55b36a,7.65,0.48,-2.0);cyl(0.045,0.3,0xe36aa8,8.05,0.62,-2.0);ob(7.3,8.3,-2.3,-1.7);
+const l=grp(6.8,0,-3.4,0);l.rotation.x=-0.1;bx(0.04,2.2,0.04,0xb9bcc1,-0.2,1.1,0,l,0.3);bx(0.04,2.2,0.04,0xb9bcc1,0.2,1.1,0,l,0.3);for(let i=1;i<=6;i++)bx(0.4,0.03,0.04,0xb9bcc1,0,i*0.34,0,l,0.3);ob(6.55,7.05,SZ,-3.2);
+cyl(0.17,0.3,0x1c1c1c,6.85,0.15,-0.7);ob(6.6,7.1,-0.95,-0.45);bx(0.4,0.3,0.35,0xb58a54,9.0,0.15,-0.7);bx(0.35,0.22,0.3,0x2f66c8,8.5,0.11,-0.7);ob(8.25,9.25,-0.9,-0.45)}
+{bx(2.3,0.04,0.78,0xb8621e,3.2,0.72,-3.0);bx(2.3,0.01,0.78,tmat(batik,0.35),3.2,0.745,-3.0);bx(0.04,0.7,0.74,0xb8621e,2.1,0.35,-3.0);bx(0.04,0.7,0.74,0xb8621e,4.3,0.35,-3.0);bx(2.2,0.4,0.03,0xa8531a,3.2,0.5,-2.62);
+bx(0.52,0.32,0.04,0x111114,2.7,1.02,-3.2,undefined,0.3);bx(0.14,0.12,0.04,0x111114,2.7,0.82,-3.2);bx(0.4,0.015,0.14,0xd8d8d8,2.7,0.76,-2.85);cyl(0.1,0.22,M(0xa8acb2,0.3,0.8),3.7,0.86,-2.9);bx(0.25,0.1,0.12,0xe07a1c,3.3,0.8,-2.75);
+[0xc83a3a,0x3a6bc5,0xe2b832,0x3a9858].forEach((cc,i)=>bx(0.3,0.03,0.22,cc,4.0,0.78+i*0.03,-2.8));ob(2.0,4.4,-3.4,-2.55);
+bx(0.46,0.05,0.46,0x2d5fd0,3.2,0.47,-2.2);bx(0.46,0.4,0.04,0x2d5fd0,3.2,0.75,-1.97);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(a=>bx(0.025,0.45,0.025,0x9aa0a8,3.2+a[0]*0.2,0.22,-2.2+a[1]*0.2,undefined,0.3));ob(2.9,3.5,-2.5,-1.9);
+bx(0.95,1.85,0.46,0xdcdee1,2.0,0.92,-3.3,undefined,0.4);bx(0.01,1.75,0.45,0xa8acb2,2.0,0.92,-3.07);bx(0.22,0.46,0.46,0x1a1a1a,1.8,2.07,-3.3);cyl(0.04,0.26,M(0xd9a521,0.3,0.8),2.3,1.98,-3.3);ob(1.55,2.5,SZ,-3.05);
+bx(1.2,0.04,0.6,0xb87a2e,4.9,0.72,-0.9);bx(0.04,0.72,0.55,0xb87a2e,4.35,0.36,-0.9);bx(0.04,0.72,0.55,0xb87a2e,5.45,0.36,-0.9);bx(0.3,0.05,0.22,0xd8604a,4.7,0.77,-0.9);bx(0.28,0.05,0.2,0xe2c23a,4.7,0.82,-0.9);ob(4.3,5.5,-1.25,-0.55);
+bx(0.4,0.3,0.35,0xb58a54,1.9,0.15,-0.6);bx(0.3,0.3,0.3,0xe0e0e0,2.0,0.15,-1.1);ob(1.65,2.25,-1.3,-0.4);
+[-2.5,-1.4].forEach(z=>bx(0.14,2.1,0.3,tmat(curtTex(0.4,true),0.9),SX,1.05,z))}
+
+const rects=[[RAD,W-RAD,RAD,D-RAD],[SX+RAD,W-RAD,SZ+RAD,-RAD],[1.2+RAD,SX-RAD,SZ+RAD,-RAD],[DX0+RAD,DX1-RAD,-0.7,0.7],[SX-0.6,SX+0.6,-2.5+RAD,-1.4-RAD]];
+const ok=(x,z)=>rects.some(r=>x>=r[0]&&x<=r[1]&&z>=r[2]&&z<=r[3])&&!obs.some(o=>x>o[0]-RAD&&x<o[1]+RAD&&z>o[2]-RAD&&z<o[3]+RAD);
+let yaw=Math.PI,pitch=-0.03,px=8.4,pz=2.0;
+const keys={};let drag=null,joy=null;const jv={x:0,y:0};
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const help=document.getElementById('help'),loc=document.getElementById('loc');
+let hid=false;const hideHelp=()=>{if(!hid){hid=true;setTimeout(()=>help.style.display='none',6000)}};
+addEventListener('keydown',e=>{keys[e.code]=true;if(e.code.startsWith('Arrow')||e.code==='Space')e.preventDefault();hideHelp()});
+addEventListener('keyup',e=>{keys[e.code]=false});
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}hideHelp();if(e.pointerType==='touch'&&!document.fullscreenElement&&document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).catch(()=>{})}if(e.pointerType==='touch'&&e.clientX<innerWidth*0.4){joy={id:e.pointerId,x:e.clientX,y:e.clientY};stick.style.display='block';stick.style.left=e.clientX+'px';stick.style.top=e.clientY+'px'}else drag={id:e.pointerId,x:e.clientX,y:e.clientY}});
+cv.addEventListener('pointermove',e=>{if(joy&&e.pointerId===joy.id){jv.x=cl((e.clientX-joy.x)/50,-1,1);jv.y=cl((e.clientY-joy.y)/50,-1,1);knob.style.transform='translate('+jv.x*40+'px,'+jv.y*40+'px)'}else if(drag&&e.pointerId===drag.id){yaw-=(e.clientX-drag.x)*0.005;pitch=cl(pitch-(e.clientY-drag.y)*0.005,-1.2,1.2);drag.x=e.clientX;drag.y=e.clientY}});
+const up=e=>{if(joy&&e.pointerId===joy.id){joy=null;jv.x=jv.y=0;stick.style.display='none';knob.style.transform='none'}if(drag&&e.pointerId===drag.id)drag=null};
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+function resize(){const w=cv.clientWidth,h=cv.clientHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+const stick=document.getElementById('stick'),knob=document.getElementById('knob'),runB=document.getElementById('run');
+runB.addEventListener('pointerdown',e=>{keys.ShiftLeft=true;e.preventDefault()});
+['pointerup','pointercancel','pointerleave'].forEach(n=>runB.addEventListener(n,()=>{keys.ShiftLeft=false}));
+document.getElementById('fs').onclick=async()=>{try{await document.documentElement.requestFullscreen()}catch(e){}try{await screen.orientation.lock('landscape')}catch(e){}};
+if(matchMedia('(pointer:coarse)').matches)help.textContent='Geser di sisi kiri untuk jalan, geser di sisi kanan untuk melihat sekeliling. Tombol Lari ada di kanan bawah.';
+addEventListener('orientationchange',()=>setTimeout(resize,200));
+let last=performance.now();
+const area=()=>pz<0?(px<SX?'Ruang C (kerja)':'Ruang B (sofa)'):'Ruang A (lab komputer)';
+function tick(t){const dt=Math.min((t-last)/1000,0.05);last=t;
+yaw+=((keys.ArrowLeft?1:0)-(keys.ArrowRight?1:0))*1.8*dt;
+const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-jv.y,s=(keys.KeyD?1:0)-(keys.KeyA?1:0)+jv.x;
+const sp=(keys.ShiftLeft||keys.ShiftRight?4.2:2.1)*dt,fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
+const dx=(fx*f+rx*s)*sp,dz=(fz*f+rz*s)*sp;
+if(ok(px+dx,pz))px+=dx;if(ok(px,pz+dz))pz+=dz;
+cam.position.set(px,1.62,pz);cam.rotation.set(pitch,yaw,0);
+const a=area();if(loc.textContent!==a)loc.textContent=a;
+ren.render(sc,cam);requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+</script></body></html>

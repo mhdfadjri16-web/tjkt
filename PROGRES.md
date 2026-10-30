@@ -66,10 +66,11 @@ Plugin, tema, pengaturan
 - Mesin chat berbasis AI, pembersihan log pengunjung lama, paginasi di daftar admin (batas saat ini 300 baris), kompres/resize gambar.
 - Reset password lewat email (butuh SMTP).
 
-## Tambahan: Tur Virtual Lab (walk-in)
-- Halaman `pages/lab.php`, data di `includes/lab-data.php`, gaya `assets/css/lab.css`, mesin `assets/js/lab.js`.
-- 23 foto lab (+ thumbnail) di `assets/img/lab/lab-NN.jpg`. Ini file statis di repo (bukan upload dashboard), jadi tidak hilang saat redeploy.
-- Fitur: efek berjalan maju/mundur, titik pindah ruangan (pintu), titik info, jalan otomatis, layar penuh, geser di HP, keyboard, filmstrip, tautan langsung `#scene-N`.
-- Mengganti/menambah foto: edit `includes/lab-data.php` (urutan = urutan jalan; w/h = ukuran foto; hot x,y dalam persen). Belum bisa diedit dari dashboard.
-- `header.php` dan `footer.php` kini mendukung `$extra_css` / `$extra_js` per halaman. Menu bertambah "Tur Lab" (menu HP muncul mulai lebar 1000px).
-- Sudah diuji di Chromium (navigasi, pin, info, Home/End, filmstrip, layar HP, tanpa error JS). Sisi PHP-nya belum dijalankan.
+## Tambahan: Walk-in Lab (simulator 3D)
+- Halaman `pages/walk-in.php` menampilkan simulator di dalam iframe; simulatornya sendiri adalah satu file mandiri `assets/walkin/index.html`
+  (Three.js r128 disimpan lokal di `assets/walkin/three.min.js`, tidak bergantung CDN). Simulator juga bisa dibuka langsung di `/assets/walkin/index.html`.
+- Simulator baru dimuat saat tombol "Mulai walk-in" ditekan (hemat kuota). Logika tombol, layar penuh, dan fokus keyboard ada di `assets/js/walkin.js`; gaya di `assets/css/walkin.css`.
+- Menu "Walk-in Lab" ada di `includes/header.php` dan footer; teaser dengan gambar pratinjau ada di beranda (`assets/img/walkin-preview.jpg`).
+- `header.php` dan `footer.php` kini mendukung `$extra_css` / `$extra_js` per halaman. Menu HP (hamburger) muncul mulai lebar 1100px karena menu bertambah.
+- Mengubah isi ruangan: edit `assets/walkin/index.html` (denah dan perabot dibuat dari kode, bukan foto).
+- Tur foto lama (`pages/lab.php`, `lab.css`, `lab.js`, `lab-data.php`, `assets/img/lab/`) dihapus karena diganti simulator ini.

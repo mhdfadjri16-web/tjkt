@@ -1,7 +1,7 @@
 <?php
 /**
  * Header + navbar. Variabel yang diset halaman sebelum require:
- *   $page_title (string), $active (beranda|profil|kegiatan|galeri|pkl|kontak), $page_desc (opsional)
+ *   $extra_css (array URL css, opsional), $page_title (string), $active (beranda|profil|kegiatan|galeri|walkin|pkl|kontak), $page_desc (opsional)
  */
 require_once __DIR__ . '/init.php';
 track_visit();
@@ -14,7 +14,7 @@ $nav = [
     'profil'   => ['Profil', url('pages/profil.php')],
     'kegiatan' => ['Kegiatan', url('pages/kegiatan.php')],
     'galeri'   => ['Galeri', url('pages/galeri.php')],
-    'lab'      => ['Tur Lab', url('pages/lab.php')],
+    'walkin'   => ['Walk-in Lab', url('pages/walk-in.php')],
     'pkl'      => ['Tempat PKL', url('pages/flyer-pkl.php')],
     'kontak'   => ['Kontak', url('pages/kontak.php')],
 ];
