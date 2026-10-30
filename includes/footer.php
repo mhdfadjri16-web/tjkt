@@ -10,6 +10,7 @@
         <a href="<?= h(url('pages/profil.php')) ?>">Profil</a>
         <a href="<?= h(url('pages/kegiatan.php')) ?>">Kegiatan</a>
         <a href="<?= h(url('pages/galeri.php')) ?>">Galeri</a>
+        <a href="<?= h(url('pages/lab.php')) ?>">Tur Lab</a>
         <a href="<?= h(url('pages/flyer-pkl.php')) ?>">Tempat PKL</a>
         <a href="<?= h(url('pages/kontak.php')) ?>">Kontak</a>
       </nav>
@@ -28,5 +29,7 @@
 </footer>
 <?php hook('footer_end'); ?>
 <script src="<?= h(asset('js/main.js')) ?>" defer></script>
+<?php foreach (($extra_js ?? []) as $js): ?><script src="<?= h($js) ?>" defer></script>
+<?php endforeach; ?>
 </body>
 </html>

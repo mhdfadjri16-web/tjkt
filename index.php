@@ -1,6 +1,8 @@
 <?php
+require_once __DIR__ . '/includes/init.php';
 $page_title = 'Beranda';
 $active = 'beranda';
+$extra_css = [asset('css/lab.css')];
 require __DIR__ . '/includes/header.php';
 $kegiatan = kegiatan_list(3);
 $agenda   = agenda_list(3);
@@ -98,6 +100,24 @@ $galeri   = galeri_list(null, 'foto', 5);
         <a class="btn btn-sm" href="<?= h(url('pages/galeri.php')) ?>">Buka galeri</a>
       </div>
       <div class="mosaic"><?php foreach ($galeri as $g) echo gallery_item($g); ?></div>
+    </div>
+  </section>
+
+  <!-- Tur lab -->
+  <section class="section">
+    <div class="container">
+      <div class="lab-teaser glass">
+        <div>
+          <h2>Jalan-jalan di lab TJKT</h2>
+          <p>Belum sempat berkunjung? Masuk ke laboratorium lewat tur virtual: lihat deretan komputer, layar, dan ruangan di baliknya.</p>
+          <a class="btn btn-primary" href="<?= h(url('pages/lab.php')) ?>">Mulai tur virtual</a>
+        </div>
+        <div class="lab-photos" aria-hidden="true">
+          <img src="<?= h(asset('img/lab/lab-02-t.jpg')) ?>" alt="" loading="lazy">
+          <img src="<?= h(asset('img/lab/lab-11-t.jpg')) ?>" alt="" loading="lazy">
+          <img src="<?= h(asset('img/lab/lab-17-t.jpg')) ?>" alt="" loading="lazy">
+        </div>
+      </div>
     </div>
   </section>
 

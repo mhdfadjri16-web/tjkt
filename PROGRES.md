@@ -65,3 +65,11 @@ Plugin, tema, pengaturan
 - Logo asli sekolah dan konten asli (semua masih contoh) - isi lewat dashboard.
 - Mesin chat berbasis AI, pembersihan log pengunjung lama, paginasi di daftar admin (batas saat ini 300 baris), kompres/resize gambar.
 - Reset password lewat email (butuh SMTP).
+
+## Tambahan: Tur Virtual Lab (walk-in)
+- Halaman `pages/lab.php`, data di `includes/lab-data.php`, gaya `assets/css/lab.css`, mesin `assets/js/lab.js`.
+- 23 foto lab (+ thumbnail) di `assets/img/lab/lab-NN.jpg`. Ini file statis di repo (bukan upload dashboard), jadi tidak hilang saat redeploy.
+- Fitur: efek berjalan maju/mundur, titik pindah ruangan (pintu), titik info, jalan otomatis, layar penuh, geser di HP, keyboard, filmstrip, tautan langsung `#scene-N`.
+- Mengganti/menambah foto: edit `includes/lab-data.php` (urutan = urutan jalan; w/h = ukuran foto; hot x,y dalam persen). Belum bisa diedit dari dashboard.
+- `header.php` dan `footer.php` kini mendukung `$extra_css` / `$extra_js` per halaman. Menu bertambah "Tur Lab" (menu HP muncul mulai lebar 1000px).
+- Sudah diuji di Chromium (navigasi, pin, info, Home/End, filmstrip, layar HP, tanpa error JS). Sisi PHP-nya belum dijalankan.

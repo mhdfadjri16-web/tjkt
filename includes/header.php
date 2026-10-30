@@ -14,6 +14,7 @@ $nav = [
     'profil'   => ['Profil', url('pages/profil.php')],
     'kegiatan' => ['Kegiatan', url('pages/kegiatan.php')],
     'galeri'   => ['Galeri', url('pages/galeri.php')],
+    'lab'      => ['Tur Lab', url('pages/lab.php')],
     'pkl'      => ['Tempat PKL', url('pages/flyer-pkl.php')],
     'kontak'   => ['Kontak', url('pages/kontak.php')],
 ];
@@ -30,7 +31,8 @@ $nav = [
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= h(asset('css/style.css')) ?>">
-<style>
+<?php foreach (($extra_css ?? []) as $css): ?><link rel="stylesheet" href="<?= h($css) ?>">
+<?php endforeach; ?><style>
 :root{--bg-base:<?= h(site('warna_bg')) ?>;--accent-1:<?= h(site('warna_aksen_1')) ?>;--accent-2:<?= h(site('warna_aksen_2')) ?>;--accent-3:<?= h(site('warna_aksen_3')) ?>}
 </style>
 <?php hook('head_end'); ?>
